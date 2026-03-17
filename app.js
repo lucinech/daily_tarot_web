@@ -33,7 +33,7 @@ function App() {
                         const record = history[today];
                         const fullCard = json.major_arcana[record.index];
                         if (fullCard) {
-                            setCard({ ...fullCard, isUpright: record.isUpright, imageUrl: `images/${record.index}.jpg` });
+                            setCard({ ...fullCard, isUpright: record.isUpright, imageUrl: `images/${record.index}.jpeg` });
                         }
                     }
                 }
@@ -55,7 +55,7 @@ function App() {
             const newHistory = { ...history, [today]: { index, isUpright } };
             setHistory(newHistory);
             localStorage.setItem('tarot_history', JSON.stringify(newHistory));
-            setCard({ ...data[index], isUpright, imageUrl: `images/${index}.jpg` });
+            setCard({ ...data[index], isUpright, imageUrl: `images/${index}.jpeg` });
             setIsDrawing(false);
         }, 1200);
     };
