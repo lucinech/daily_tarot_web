@@ -92,4 +92,60 @@ function App() {
                             <div className="w-full space-y-4 animate-[fadeIn_0.5s]">
                                 <div className="text-center">
                                     <h2 className="text-3xl font-bold text-yellow-400">{card.name}</h2>
-                                    <p className="text-indigo-300 text-xs mt-1">{card.isUpright ? '正位 · UPRIGHT' : '逆位 · REVERSED
+                                    <p className="text-indigo-300 text-xs mt-1">{card.isUpright ? '正位 · UPRIGHT' : '逆位 · REVERSED'}</p>
+                                </div>
+                                <div className="flex flex-wrap gap-2 justify-center opacity-70">
+                                    {card.keywords?.map(k => <span key={k} className="text-[10px] px-2 py-1 bg-white/5 rounded">#{k}</span>)}
+                                </div>
+                                <div className="bg-white/5 p-5 rounded-2xl border border-white/5">
+                                    <p className="text-sm leading-relaxed text-slate-300 italic">{card.meaning}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    /* 月历视图 */
+                    <div className="w-full max-w-md space-y-6 pt-4">
+                         <div className="flex justify-between items-center px-2">
+                            <button onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))}>◁</button>
+                            <span className="font-serif">{currentMonth.getFullYear()} / {currentMonth.getMonth() + 1}</span>
+                            <button onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))}>▷</button>
+                        </div>
+                        <div className="grid grid-cols-7 gap-2">
+                             {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay() }).map((_, i) => <div key={`e-${i}`} />)}
+                             {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate() }).map((_, i) => {
+                                 const day = i + 1;
+                                 const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                                 const record = history[dateStr];
+                                 return (
+                                     <div key={day} className="aspect-[2/3] bg-slate-900 rounded border border-white/5 flex items-center justify-center relative overflow-hidden">
+                                         <span className="absolute top-0.5 left-1 text-[8px] opacity-20">{day}</span>
+                                         {record && <img src={`images/${record.index}.jpg`} className={`w-full h-full object-cover ${record.isUpright ? '' : 'rotate-180'}`} />}
+                                     </div>
+                                 );
+                             })}
+                        </div>
+                    </div>
+                )}
+            </main>
+
+            {/* 吸底按钮：改用 absolute 定位确保不会因为 flex 挤压而消失 */}
+            {view === 'draw' && (
+                <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent">
+                    <button 
+                        onClick={drawCard} 
+                        disabled={hasDrawnToday || isDrawing}
+                        className={`w-full max-w-sm mx-auto block py-4 rounded-xl font-bold text-lg ${hasDrawnToday ? 'bg-slate-800 text-white/20' : 'bg-indigo-600 shadow-xl shadow-indigo-900/20'}`}
+                    >
+                        {hasDrawnToday ? '今日已占卜' : '开启今日启示'}
+                    </button>
+                    {/* 预留 Home Indicator 空间 */}
+                    <div className="h-6"></div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
