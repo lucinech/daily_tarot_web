@@ -1,0 +1,9 @@
+{
+  "major_arcana": [
+    { "id": 0, "name": "The Fool", "keywords": ["自由", "开始", "冒险"] },
+    { "id": 1, "name": "The Magician", "keywords": ["创造力", "行动", "专注"] },
+    { "id": 2, "name": "The High Priestess", "keywords": ["直觉", "潜意识", "智慧"] },
+    { "id": 10, "name": "Wheel of Fortune", "keywords": ["轮回", "运气", "转折点"] },
+    { "id": 19, "name": "The Sun", "keywords": ["快乐", "成功", "生命力"] }
+  ]
+}
