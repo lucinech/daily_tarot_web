@@ -12,11 +12,15 @@ function App() {
             .then(json => setData(json.major_arcana));
     }, []);
 
-    const drawCard = () => {
+   const drawCard = () => {
         setIsDrawing(true);
         setTimeout(() => {
             const randomCard = data[Math.floor(Math.random() * data.length)];
-            setCard(randomCard);
+            // 【关键修改】：抽牌的同时，随机决定正逆位
+            const isUpright = Math.random() > 0.5; 
+            
+            // 把正逆位信息也存进卡片对象里
+            setCard({ ...randomCard, isUpright }); 
             setIsDrawing(false);
         }, 800);
     };
@@ -30,7 +34,12 @@ function App() {
                     <div className="animate-spin text-4xl">⏳</div>
                 ) : card ? (
                     <div className="animate-[fadeIn_0.5s]">
-                        <h2 className="text-4xl font-bold text-yellow-400 mb-3">{card.name}</h2>
+                        <h2 className="text-4xl font-bold text-yellow-400 mb-3">
+                            {card.name}
+                            <span className="text-xl ml-2 text-indigo-300">
+                                ({card.isUpright ? '正位' : '逆位'})
+                            </span>
+                        </h2>
                         <div className="flex gap-2 justify-center flex-wrap">
                             {card.keywords.map(k => (
                                 <span key={k} className="text-xs bg-indigo-900/50 px-2 py-1 rounded border border-indigo-400/30">{k}</span>
