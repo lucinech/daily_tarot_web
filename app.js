@@ -7,7 +7,6 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDrawing, setIsDrawing] = useState(false);
     
-    // 初始化本地存储，防止 JSON 解析失败导致崩溃
     const [history, setHistory] = useState(() => {
         try {
             const saved = localStorage.getItem('tarot_history');
@@ -23,7 +22,6 @@ function App() {
     };
 
     useEffect(() => {
-        // 增加 loading 状态保护
         fetch('cards_data.json')
             .then(res => res.json())
             .then(json => {
@@ -31,18 +29,16 @@ function App() {
                 const today = getTodayStr();
                 if (history[today]) {
                     const record = history[today];
+                    const fullCardData = json.major_arcana[record.index];
                     setCard({ 
-                        ...json.major_arcana[record.index], 
+                        ...fullCardData, 
                         isUpright: record.isUpright, 
                         imageUrl: `images/${record.index}.jpg` 
                     });
                 }
                 setIsLoading(false);
             })
-            .catch(err => {
-                console.error("配置加载失败，请检查文件路径");
-                setIsLoading(false);
-            });
+            .catch(err => setIsLoading(false));
     }, []);
 
     const drawCard = () => {
@@ -50,6 +46,7 @@ function App() {
         if (history[today] || isDrawing) return;
 
         setIsDrawing(true);
+        setCard(null); 
         setTimeout(() => {
             const index = Math.floor(Math.random() * data.length);
             const isUpright = Math.random() > 0.5;
@@ -57,6 +54,7 @@ function App() {
             
             setHistory(newHistory);
             localStorage.setItem('tarot_history', JSON.stringify(newHistory));
+            
             setCard({ ...data[index], isUpright, imageUrl: `images/${index}.jpg` });
             setIsDrawing(false);
         }, 1500);
@@ -67,86 +65,48 @@ function App() {
     const hasDrawnToday = !!history[getTodayStr()];
 
     return (
-        <div className="fixed inset-0 bg-slate-950 text-white flex flex-col items-center overflow-hidden font-sans">
+        <div className="fixed inset-0 bg-slate-950 text-white flex flex-col items-center font-sans overflow-hidden">
             
-            {/* 顶栏导航 */}
-            <div className="z-50 mt-8 mb-4 bg-slate-900/80 p-1 rounded-2xl border border-white/10 backdrop-blur-md flex">
-                <button onClick={() => setView('draw')} className={`px-8 py-2 rounded-xl text-sm transition-all ${view === 'draw' ? 'bg-indigo-600 shadow-lg' : 'opacity-40'}`}>今日启示</button>
-                <button onClick={() => setView('calendar')} className={`px-8 py-2 rounded-xl text-sm transition-all ${view === 'calendar' ? 'bg-indigo-600 shadow-lg' : 'opacity-40'}`}>时光月历</button>
+            {/* 顶部导航 - 增加 PaddingTop 避开刘海 */}
+            <div className="z-50 pt-10 pb-4 w-full flex justify-center">
+                <div className="bg-slate-900/80 p-1 rounded-2xl border border-white/10 backdrop-blur-md flex scale-90">
+                    <button onClick={() => setView('draw')} className={`px-8 py-2 rounded-xl text-sm transition-all ${view === 'draw' ? 'bg-indigo-600 shadow-lg' : 'opacity-40'}`}>今日启示</button>
+                    <button onClick={() => setView('calendar')} className={`px-8 py-2 rounded-xl text-sm transition-all ${view === 'calendar' ? 'bg-indigo-600 shadow-lg' : 'opacity-40'}`}>时光月历</button>
+                </div>
             </div>
 
-            <main className="flex-1 w-full max-w-md flex flex-col items-center justify-center p-6 pb-12">
+            {/* 内容区：增加 pb-24 确保内容不被按钮挡住，允许滚动 */}
+            <main className="flex-1 w-full max-w-md overflow-y-auto px-6 pb-32">
                 {view === 'draw' ? (
-                    <div className="w-full flex flex-col items-center justify-between h-full max-h-[700px]">
+                    <div className="w-full flex flex-col items-center py-4 space-y-8">
                         
                         <div className="text-center">
-                            <h1 className="text-2xl font-serif tracking-[0.3em] text-indigo-100">TAROT DAILY</h1>
-                            <div className="h-1 w-12 bg-indigo-500/30 mx-auto mt-2 rounded-full"></div>
+                            <h1 className="text-xl font-serif tracking-[0.3em] text-indigo-100 uppercase">Tarot Daily</h1>
+                            {hasDrawnToday && <p className="text-[10px] text-indigo-400 mt-1 tracking-widest opacity-60 italic">— 今日能量已锁定 —</p>}
                         </div>
 
-                        {/* 核心展示区：永不返回空，确保有东西显示 */}
-                        <div className="relative flex-1 flex items-center justify-center w-full">
+                        <div className="relative flex flex-col items-center w-full">
                             {isDrawing ? (
-                                <div className="w-56 h-96 bg-indigo-600/5 rounded-3xl border-2 border-indigo-500/20 animate-pulse flex items-center justify-center">
+                                <div className="w-48 h-72 bg-indigo-600/5 rounded-3xl border-2 border-indigo-500/20 animate-pulse flex items-center justify-center">
                                     <span className="text-5xl animate-bounce">🔮</span>
                                 </div>
                             ) : card ? (
-                                <div className="flex flex-col items-center animate-[fadeIn_0.6s_ease-out]">
-                                    <div className="relative mb-6">
-                                        <img src={card.imageUrl} className={`w-56 h-96 object-cover rounded-3xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/20 ${card.isUpright ? '' : 'rotate-180'}`} />
-                                        <div className="absolute -inset-4 border border-indigo-500/10 rounded-[3rem] -z-10 animate-pulse"></div>
-                                    </div>
-                                    <h2 className="text-4xl font-bold text-yellow-400 mb-1 drop-shadow-md">{card.name}</h2>
-                                    <p className="text-indigo-200 tracking-widest text-sm opacity-80">{card.isUpright ? '✦ 正位 UPRIGHT ✦' : '✦ 逆位 REVERSED ✦'}</p>
-                                </div>
-                            ) : (
-                                /* 没抽牌时的保底 UI */
-                                <div className="flex flex-col items-center space-y-6">
-                                    <div className="w-56 h-96 bg-slate-900/80 rounded-3xl border border-dashed border-white/10 flex flex-col items-center justify-center group">
-                                        <div className="w-16 h-24 border-2 border-white/5 rounded-lg mb-4 group-hover:border-indigo-500/30 transition-colors"></div>
-                                        <p className="text-white/20 text-xs italic tracking-widest">尚未开启今日契约</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                                <div className="flex flex-col items-center animate-[fadeIn_0.8s_ease-out] w-full">
+                                    <img src={card.imageUrl} className={`w-48 h-72 object-cover rounded-3xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-white/20 mb-6 ${card.isUpright ? '' : 'rotate-180'}`} />
+                                    
+                                    <div className="text-center space-y-4 w-full">
+                                        <div>
+                                            <h2 className="text-3xl font-bold text-yellow-400 mb-1">{card.name}</h2>
+                                            <span className="text-[10px] tracking-[0.2em] text-indigo-200 bg-indigo-500/10 px-4 py-1 rounded-full border border-indigo-500/20 uppercase font-light">
+                                                {card.isUpright ? 'Upright 正位' : 'Reversed 逆位'}
+                                            </span>
+                                        </div>
 
-                        {/* 按钮区 */}
-                        <button 
-                            onClick={drawCard} 
-                            disabled={hasDrawnToday || isDrawing}
-                            className={`w-full py-5 rounded-[2rem] font-bold text-lg tracking-widest transition-all shadow-xl ${hasDrawnToday ? 'bg-slate-800/50 text-white/20 cursor-not-allowed' : 'bg-gradient-to-r from-indigo-600 to-purple-600 active:scale-95'}`}
-                        >
-                            {hasDrawnToday ? '今日能量已锁定' : '开启今日启示'}
-                        </button>
-                    </div>
-                ) : (
-                    /* 月历视图逻辑保持稳健 */
-                    <div className="w-full h-full bg-slate-900/30 backdrop-blur-xl rounded-[3rem] border border-white/10 p-6 flex flex-col">
-                         <div className="flex justify-between items-center mb-8">
-                            <button onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() - 1)))} className="p-2 opacity-50 hover:opacity-100">◁</button>
-                            <span className="text-xl font-serif">{currentMonth.getFullYear()} / {currentMonth.getMonth() + 1}</span>
-                            <button onClick={() => setCurrentMonth(new Date(currentMonth.setMonth(currentMonth.getMonth() + 1)))} className="p-2 opacity-50 hover:opacity-100">▷</button>
-                        </div>
-                        <div className="grid grid-cols-7 gap-2 flex-1 overflow-y-auto pr-1">
-                             {/* 简易日历渲染逻辑 */}
-                             {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).getDay() }).map((_, i) => <div key={`e-${i}`} />)}
-                             {Array.from({ length: new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate() }).map((_, i) => {
-                                 const day = i + 1;
-                                 const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                                 const record = history[dateStr];
-                                 return (
-                                     <div key={day} className="aspect-[2/3] bg-slate-800/50 rounded-lg border border-white/5 overflow-hidden flex items-center justify-center">
-                                         {record ? <img src={`images/${record.index}.jpg`} className={`w-full h-full object-cover ${record.isUpright ? '' : 'rotate-180'}`} /> : <span className="text-[10px] opacity-10">{day}</span>}
-                                     </div>
-                                 );
-                             })}
-                        </div>
-                    </div>
-                )}
-            </main>
-        </div>
-    );
-}
+                                        <div className="flex gap-2 justify-center flex-wrap opacity-60">
+                                            {card.keywords && card.keywords.map(k => (
+                                                <span key={k} className="text-[10px] px-2 py-1 bg-white/5 rounded border border-white/5">#{k}</span>
+                                            ))}
+                                        </div>
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App />);
+                                        <div className="bg-white/5 p-6 rounded-[2rem] border border-white/5 text-left shadow-inner">
+                                            <p className="text-
