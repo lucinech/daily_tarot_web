@@ -18,15 +18,23 @@ function App() {
             const index = Math.floor(Math.random() * data.length);
             const randomCard = data[index];
             const isUpright = Math.random() > 0.5;
-            // 拼接图片 URL，不足两位补0，比如 ar01
-            const imgId = String(index).padStart(2, '0');
-            const imageUrl = `https://tarot-api-3f0e.kxcdn.com/lib/img/ar${imgId}.jpg`;
+          // 换用维基百科的开源维特塔罗图源（更稳，文件名对应牌名）
+            const wikiFiles = [
+                "RWS_Tarot_00_Fool", "RWS_Tarot_01_Magician", "RWS_Tarot_02_High_Priestess",
+                "RWS_Tarot_03_Empress", "RWS_Tarot_04_Emperor", "RWS_Tarot_05_Hierophant",
+                "RWS_Tarot_06_Lovers", "RWS_Tarot_07_Chariot", "RWS_Tarot_08_Strength",
+                "RWS_Tarot_09_Hermit", "RWS_Tarot_10_Wheel_of_Fortune", "RWS_Tarot_11_Justice",
+                "RWS_Tarot_12_Hanged_Man", "RWS_Tarot_13_Death", "RWS_Tarot_14_Temperance",
+                "RWS_Tarot_15_Devil", "RWS_Tarot_16_Tower", "RWS_Tarot_17_Star",
+                "RWS_Tarot_18_Moon", "RWS_Tarot_19_Sun", "RWS_Tarot_20_Judgement",
+                "RWS_Tarot_21_World"
+            ];
+            const imageUrl = `https://raw.githubusercontent.com/mitchblank/fabulist/master/data/tarot/images/${wikiFiles[index]}.jpg`;
             
             setCard({ ...randomCard, isUpright, imageUrl });
             setIsDrawing(false);
-        }, 1200); // 稍微延长一点时间，让用户有期待感
+        }, 1200);
     };
-
     return (
         <div className="text-center p-8 bg-slate-800/90 backdrop-blur-md rounded-3xl shadow-2xl border border-indigo-500/20 max-w-sm w-full mx-auto">
             <h1 className="text-3xl font-serif mb-6 text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-400">🔮 每日一占</h1>
